@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "mkdir -p build/meta ; rm build/* ; cp src/* build",
+    "build": "mkdir -p build/meta ; rm -r build/* ; cp src/* build",
     "encrypt": "node --env-file=.env scripts/encrypt.js",
     "watch": "npx tailwindcss -i ./src/input.css -o ./src/styles.css --watch"
   },
