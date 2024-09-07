@@ -6,11 +6,8 @@ const crypto = require('crypto');
 const passphrase = process.env.PASSPHRASE;
 const textToEncrypt = process.env.IMAGE_BASE64;
 const algorithm = 'aes-256-gcm';
-// const salt = crypto.randomBytes(16); // Generate a random salt (128-bit)
-// const iv = crypto.randomBytes(12); // 96-bit IV
-const salt = hexToBytes("47c3f305d0402e89528b6af8a193f332");
-const ivBytes = hexToBytes("08a10aeecffe8f4df2b1ab06");
-const authTag = hexToBytes("ac8456639b95543617f9714aa3e0dc2d");
+const salt = crypto.randomBytes(16); // Generate a random salt (128-bit)
+const iv = crypto.randomBytes(12); // 96-bit IV
 
 const iterations = 100000; // Number of iterations for PBKDF2
 
@@ -20,7 +17,7 @@ const deriveKey = (passphrase, salt) => {
 };
 
 // Function to encrypt text
-const encrypt = (text, key, iv) => {
+const encrypt = (text) => {
     const cipher = crypto.createCipheriv(algorithm, key, iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -34,7 +31,7 @@ const encrypt = (text, key, iv) => {
 
 // Encrypt the text
 const key = deriveKey(passphrase, salt);
-const encryptedData = encrypt(textToEncrypt, key, iv);
+const encryptedData = encrypt(textToEncrypt);
 
 console.log('Encrypted Text:', encryptedData.encryptedText);
 console.log('Salt:', salt.toString('hex'));
