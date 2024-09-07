@@ -89,14 +89,24 @@
     const message = document.querySelector('.search .message p');
     const image = document.querySelector('.secret img');
     pinInputs.forEach((it, idx) => {
-        it.addEventListener('input', async () => handlePinInput(idx));
+        it.addEventListener('keydown', async (event) => {
+            if (event.keyCode === 8) {
+                getPinInput(idx).value = "";
+                if (idx !== 0) {
+                    getPinInput(idx - 1).focus();
+                }
+            }
+        });
+        it.addEventListener('input', async () => {
+            return handlePinInput(idx);
+        });
     });
 
     const oldValues = ["", "", "", "", "", "", "", ""];
 
     async function handlePinInput(idx) {
         try {
-            const it = document.querySelector(`.pin input#pin${idx}`);
+            const it = getPinInput(idx);
             it.value = (newValue => {
                 if (isStringNumber(oldValues[idx])) {
                     newValue = newValue.replace(oldValues[idx], "");
@@ -107,9 +117,9 @@
                 return newValue;
             })(it.value);
             const pin = [...pinInputs].map(it => it.value).filter(it => isStringNumber(it)).join("");
-            let toFocus;
+            let toFocusIdx;
             if (isStringNumber(it.value) && idx + 1 < pinInputs.length) {
-                toFocus = pinInputs[(idx + 1) % pinInputs.length];
+                toFocusIdx = (idx + 1) % pinInputs.length;
             }
             if (pin.length === 8) {
                 const decrypted = await decrypt(pin);
@@ -120,7 +130,9 @@
             } else {
                 message.innerText = "čo by to mohlo byť...";
             }
-            if (toFocus) {
+            if (toFocusIdx) {
+                const toFocus = getPinInput(toFocusIdx);
+                toFocus.value = "";
                 toFocus.focus();
             }
         } catch (e) {
@@ -180,6 +192,10 @@
         );
         const decoder = new TextDecoder();
         return decoder.decode(decrypted);
+    }
+    
+    function getPinInput(idx) {
+        return document.querySelector(`.pin input#pin${idx}`);
     }
 
 </script>
