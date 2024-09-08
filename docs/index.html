@@ -13,8 +13,8 @@
             <div class="relative bg-white px-6 pt-10 pb-9 shadow-xl mx-auto w-full rounded-2xl">
                 <div class="mx-auto flex w-full  flex-col space-y-16">
                     <div class="flex flex-col items-center justify-center text-center space-y-2">
-                        <div class="message flex flex-row text-sm font-medium text-gray-400">
-                            <p>čo by to mohlo byť...</p>
+                        <div class="message flex flex-row text-m font-medium">
+                            <p class="text-gray-400">čo by to mohlo byť...</p>
                         </div>
                     </div>
                     <div>
@@ -86,12 +86,12 @@
     const authTagHex = 'fdb3bb66c290c948bb8f539890236b09';
 
     const pinInputs = document.querySelectorAll('.pin input');
-    const message = document.querySelector('.search .message p');
     const image = document.querySelector('.secret img');
     pinInputs.forEach((it, idx) => {
         it.addEventListener('keydown', async (event) => {
             if (event.keyCode === 8) {
                 getPinInput(idx).value = "";
+                oldValues[idx] = "";
                 if (idx !== 0) {
                     getPinInput(idx - 1).focus();
                 }
@@ -108,27 +108,25 @@
         try {
             const it = getPinInput(idx);
             it.value = (newValue => {
-                if (isStringNumber(oldValues[idx])) {
+                if (isCharNumber(oldValues[idx])) {
                     newValue = newValue.replace(oldValues[idx], "");
                 }
                 newValue = newValue?.length ? newValue.charAt(newValue.length - 1) : "";
-                newValue = isStringNumber(newValue) ? newValue : "";
+                newValue = isCharNumber(newValue) ? newValue : "";
                 oldValues[idx] = newValue;
                 return newValue;
             })(it.value);
-            const pin = [...pinInputs].map(it => it.value).filter(it => isStringNumber(it)).join("");
+            const pin = [...pinInputs].map(it => it.value).filter(it => isCharNumber(it)).join("");
             let toFocusIdx;
-            if (isStringNumber(it.value) && idx + 1 < pinInputs.length) {
+            if (isCharNumber(it.value) && idx + 1 < pinInputs.length) {
                 toFocusIdx = (idx + 1) % pinInputs.length;
             }
             if (pin.length === 8) {
                 const decrypted = await decrypt(pin);
                 image.src = `data:image/jpeg;base64,${decrypted}`;
-                message.innerText = '';
-                // it.className = `${it.className} hidden`;
                 document.querySelector(".search").className = `hidden`;
             } else {
-                message.innerText = "čo by to mohlo byť...";
+                setMessage("čo by to mohlo byť...");
             }
             if (toFocusIdx) {
                 const toFocus = getPinInput(toFocusIdx);
@@ -137,12 +135,25 @@
             }
         } catch (e) {
             console.error(e);
-            message.innerText = random([`to nie`, "to nie je ono", "nemáte šancu", "no to fakt ne", "skúste to znova", "mínus"]);
+            const msg = random([`to nie`, "to nie je ono", "nemáte šancu", "no to fakt ne", "skúste to znova", "mínus"]);
+            setMessage(msg, true);
         }
     }
+    
+    function setMessage(msg, isError = false) {
+        const message = document.querySelector('.search .message p');
+        if (message.classList.contains('text-gray-400') && isError) {
+            message.classList.remove('text-gray-400');
+            message.classList.add('text-red-400');
+        } else if (message.classList.contains('text-red-400') && !isError) {
+            message.classList.add('text-gray-400');
+            message.classList.remove('text-red-400');
+        }
+        message.innerText = msg;
+    }
 
-    function isStringNumber(it) {
-        return "0123456789".split("").includes(it);
+    function isCharNumber(it) {
+        return it.length === 1 && "0123456789".includes(it);
     }
 
     function random(it) {
