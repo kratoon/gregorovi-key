@@ -91,7 +91,6 @@
         it.addEventListener('keydown', async (event) => {
             if (event.keyCode === 8) {
                 getPinInput(idx).value = "";
-                oldValues[idx] = "";
                 if (idx !== 0) {
                     getPinInput(idx - 1).focus();
                 }
@@ -102,18 +101,12 @@
         });
     });
 
-    const oldValues = ["", "", "", "", "", "", "", ""];
-
     async function handlePinInput(idx) {
         try {
             const it = getPinInput(idx);
             it.value = (newValue => {
-                if (isCharNumber(oldValues[idx])) {
-                    newValue = newValue.replace(oldValues[idx], "");
-                }
                 newValue = newValue?.length ? newValue.charAt(newValue.length - 1) : "";
                 newValue = isCharNumber(newValue) ? newValue : "";
-                oldValues[idx] = newValue;
                 return newValue;
             })(it.value);
             const pin = [...pinInputs].map(it => it.value).filter(it => isCharNumber(it)).join("");
